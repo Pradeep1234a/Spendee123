@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#1b4332"/>
+<title>Spendee</title>
+<!--
+  ══════════════════════════════════════════════════════════════
+  SPENDEE — Production-ready personal finance dashboard
+  
+  CDN dependencies:
+    - Google Fonts (Fraunces, DM Sans, DM Mono)
+    - Chart.js 4.4.0 (lazy-loaded by analytics.js only when needed)
+  
+  To run locally:
+    Option A — Live Server (VS Code extension): open index.html
+    Option B — Python:  python3 -m http.server 8080
+    Option C — Node:    npx serve .
+  
+  ES Module imports require a server (not file://).
+  ══════════════════════════════════════════════════════════════
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles/main.css"/>
+</head>
+<body>
+
+<!-- Splash -->
+<div id="splash"><div class="splash-inner">
+  <div class="splash-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="28" height="28">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+      <path d="M12 6v6l4 2"/>
+    </svg>
+  </div>
+  <div class="splash-name">Spendee</div>
+  <div class="splash-sub">Finance Dashboard</div>
+</div></div>
+
+<!-- Auth -->
+<div id="auth" class="hidden"><div class="auth-box">
+  <div class="auth-brand">Spendee</div>
+  <div class="auth-sub">Personal finance, simplified</div>
+  <div class="auth-tabs">
+    <div class="auth-tab on" id="atab-login">Sign In</div>
+    <div class="auth-tab" id="atab-signup">Sign Up</div>
+  </div>
+  <div class="fld hidden" id="auth-name-wrap">
+    <label for="auth-name">Full Name</label>
+    <input class="finput" id="auth-name" type="text" placeholder="Your name" autocomplete="name" maxlength="60"/>
+  </div>
+  <div class="fld">
+    <label for="auth-email">Email</label>
+    <input class="finput" id="auth-email" type="email" placeholder="you@example.com" autocomplete="email"/>
+  </div>
+  <div class="fld">
+    <label for="auth-password">Password</label>
+    <input class="finput" id="auth-password" type="password" placeholder="Min 6 characters" autocomplete="current-password"/>
+  </div>
+  <div class="auth-err" id="auth-err"></div>
+  <button class="btn-auth" id="auth-submit">Sign In</button>
+  <button class="btn-auth" id="auth-demo-btn" style="margin-top:8px;background:transparent;border:1.5px solid var(--border);color:var(--text-2);">&#9654; Try Demo Account</button>
+</div></div>
+
+<!-- App shell -->
+<div id="app">
+  <div class="sb-overlay" id="sb-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sb" id="sb" aria-label="Navigation">
+    <div class="sb-brand"><div class="sb-brand-dot"></div>Spendee</div>
+    <div class="sb-user" id="sb-user-btn" tabindex="0" role="button" aria-label="User profile">
+      <div class="sb-av" id="sb-av">U</div>
+      <div><div class="sb-uname" id="sb-name">User</div><div class="sb-uemail" id="sb-email"></div></div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-sec">Overview</div>
+      <div class="sb-item on" data-pg="dashboard" tabindex="0">
+        <span class="sb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>Dashboard
+      </div>
+      <div class="sb-item" data-pg="transactions" tabindex="0">
+        <span class="sb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span>Transactions
+        <span class="sb-badge hidden" id="sb-bud-badge"></span>
+      </div>
+      <div class="sb-sec">Planning</div>
+      <div class="sb-item" data-pg="budgets" tabindex="0">
+        <span class="sb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span>Budgets
+      </div>
+      <div class="sb-item" data-pg="goals" tabindex="0">
+        <span class="sb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>Goals
+      </div>
+      <div class="sb-sec">Insights</div>
+      <div class="sb-item" data-pg="analytics" tabindex="0">
+        <span class="sb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>Analytics
+      </div>
+      <div class="sb-sec">Social</div>
+      <div class="sb-item" data-pg="split" tabindex="0">
+        <span class="sb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Split &amp; Groups
+      </div>
+      <div class="sb-sec">Account</div>
+      <div class="sb-item" data-pg="profile" tabindex="0">
+        <span class="sb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>Profile
+      </div>
+    </div>
+    <div class="sb-stats">
+      <div class="sb-stat"><div class="sb-stat-lbl">Balance</div><div class="sb-stat-val" id="sb-bal">0</div></div>
+      <div class="sb-stat"><div class="sb-stat-lbl">This Month</div><div class="sb-stat-val" id="sb-mth">0</div></div>
+    </div>
+    <div class="sb-foot">
+      <button class="sb-foot-btn w100" id="btn-dark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <span id="dark-lbl">Dark Mode</span>
+      </button>
+      <button class="sb-foot-btn w100" id="btn-logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <div class="main">
+    <div class="topbar">
+      <button class="topbar-menu" id="menu-btn" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="19" height="19"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-actions">
+        <button class="ico-btn" id="cmd-btn" title="Search (Ctrl+K)" aria-label="Search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </button>
+        <button class="btn btn-primary btn-sm" id="add-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><path d="M12 4v16m8-8H4"/></svg>Add
+        </button>
+      </div>
+    </div>
+
+    <div class="content" id="content">
+      <!-- Pages are rendered here by the router -->
+      <!-- See src/app.js → _renderPage() -->
+
+      <div class="page on" id="pg-dashboard">
+        <div class="balance-card">
+          <div class="bal-lbl">Total Balance</div>
+          <div class="bal-amt" id="d-bal">0</div>
+          <div class="bal-row">
+            <div class="bal-stat"><div class="bs-lbl">&#8593; Income</div><div class="bs-val" id="d-inc">0</div></div>
+            <div class="bal-stat"><div class="bs-lbl">&#8595; Expenses</div><div class="bs-val" id="d-exp">0</div></div>
+            <div class="bal-stat"><div class="bs-lbl">&#128200; Savings</div><div class="bs-val" id="d-rate">0%</div></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:14px">
+          <div class="stat-card"><div class="stat-lbl">Net This Month</div><div class="stat-val" id="d-net">0</div></div>
+          <div class="stat-card"><div class="stat-lbl">Transactions</div><div class="stat-val" id="d-txn-cnt">0</div></div>
+          <div class="stat-card"><div class="stat-lbl">Health Score</div><div class="stat-val c-brand" id="d-health">--</div></div>
+        </div>
+        <div id="d-insights" class="mb14"></div>
+        <div style="display:grid;grid-template-columns:1fr 295px;gap:13px" id="d-two-col">
+          <div class="card">
+            <div class="card-h"><div class="card-t">Recent Transactions</div>
+              <button class="ico-btn" id="d-view-all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+            </div>
+            <div class="card-b np" id="d-recent"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <div class="card"><div class="card-h"><div class="card-t">This Month</div></div>
+              <div class="card-b" style="padding-top:9px"><div style="height:155px"><canvas id="d-chart"></canvas></div></div>
+            </div>
+            <div class="card"><div class="card-b" id="d-streak" style="padding:13px 14px"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="pg-transactions">
+        <div class="flex jb mb14" style="flex-wrap:wrap;gap:9px">
+          <h2 class="h1">Transactions</h2>
+          <div class="flex g6" style="flex-wrap:wrap">
+            <input type="text" id="txn-search" class="inp" placeholder="Search..." style="width:155px;padding:6px 11px" aria-label="Search transactions"/>
+            <select id="txn-ftype" class="fsel" aria-label="Filter by type"><option value="">All Types</option><option value="expense">Expenses</option><option value="income">Income</option></select>
+            <select id="txn-fcat"  class="fsel" aria-label="Filter by category"><option value="">All Categories</option></select>
+            <select id="txn-fmonth" class="fsel" aria-label="Filter by month"><option value="">All Time</option></select>
+            <select id="txn-sort"  class="fsel" aria-label="Sort by"><option value="date-d">Newest</option><option value="date-a">Oldest</option><option value="amt-d">Highest</option><option value="amt-a">Lowest</option></select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
+          <div class="stat-card"><div class="stat-lbl">Income</div><div class="stat-val c-green mono" id="tf-inc">0</div></div>
+          <div class="stat-card"><div class="stat-lbl">Expenses</div><div class="stat-val c-red mono" id="tf-exp">0</div></div>
+          <div class="stat-card"><div class="stat-lbl">Count</div><div class="stat-val mono" id="tf-cnt">0</div></div>
+        </div>
+        <div id="txn-list"></div>
+      </div>
+
+      <div class="page" id="pg-budgets">
+        <div class="flex jb mb14" style="flex-wrap:wrap;gap:9px">
+          <div><h2 class="h1">Budgets</h2><p class="sm muted" id="bud-month"></p></div>
+          <button class="btn btn-primary btn-sm" id="bud-add-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><path d="M12 4v16m8-8H4"/></svg>Add</button>
+        </div>
+        <div class="card mb14" style="padding:15px 17px">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+            <div><div class="stat-lbl">Budget</div><div class="stat-val mono" id="bh-total">0</div></div>
+            <div><div class="stat-lbl">Spent</div><div class="stat-val c-red mono" id="bh-spent">0</div></div>
+            <div><div class="stat-lbl">Remaining</div><div class="stat-val c-green mono" id="bh-rem">0</div></div>
+            <div><div class="stat-lbl">Categories</div><div class="stat-val mono" id="bh-cats">0</div></div>
+          </div>
+          <div class="mt8">
+            <div class="flex jb mb8"><span class="xs muted semi">Overall</span><span class="xs mono bold" id="bh-pct">0%</span></div>
+            <div class="prog" style="height:9px"><div class="prog-fill g" id="bh-bar" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div id="bud-list"></div>
+      </div>
+
+      <div class="page" id="pg-goals">
+        <div class="flex jb mb14">
+          <div><h2 class="h1">Goals</h2><p class="sm muted">Track savings targets</p></div>
+          <button class="btn btn-primary btn-sm" id="goal-add-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><path d="M12 4v16m8-8H4"/></svg>New Goal</button>
+        </div>
+        <div class="goals-grid" id="goals-list"></div>
+      </div>
+
+      <div class="page" id="pg-analytics">
+        <div class="flex jb mb14" style="flex-wrap:wrap;gap:9px">
+          <div><h2 class="h1">Analytics</h2><p class="sm muted" id="an-period-lbl">All time</p></div>
+          <div class="flex g5" style="overflow-x:auto;flex-shrink:0" id="an-month-strip"></div>
+        </div>
+        <div class="an-kpi">
+          <div class="stat-card"><div class="stat-lbl">Income</div><div class="stat-val mono" id="an-inc">0</div></div>
+          <div class="stat-card"><div class="stat-lbl">Expenses</div><div class="stat-val c-red mono" id="an-exp">0</div></div>
+          <div class="stat-card"><div class="stat-lbl">Net</div><div class="stat-val c-green mono" id="an-net">0</div></div>
+          <div class="stat-card"><div class="stat-lbl">Savings Rate</div><div class="stat-val c-brand mono" id="an-rate">0%</div></div>
+        </div>
+        <div class="card mb14">
+          <div class="card-h"><div class="card-t">Spending by Category</div>
+            <select id="cat-sort" class="fsel" style="font-size:.72rem" aria-label="Sort categories">
+              <option value="amt">By Amount</option>
+              <option value="name">By Name</option>
+            </select>
+          </div>
+          <div class="card-b" style="padding:11px 14px">
+            <div style="display:grid;grid-template-columns:165px 1fr;gap:18px;align-items:start;margin-bottom:13px" id="an-pie-wrap">
+              <div style="position:relative;height:165px">
+                <div id="pie-wrap" style="height:165px"><canvas id="chart-pie" aria-label="Spending by category"></canvas></div>
+                <div id="pie-center" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none">
+                  <div class="mono bold" id="pie-total" style="font-size:.85rem"></div>
+                  <div style="font-size:.58rem;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em">spent</div>
+                </div>
+              </div>
+              <div id="pie-legend" style="padding-top:2px"></div>
+            </div>
+            <div id="cat-breakdown"></div>
+          </div>
+        </div>
+        <div class="card mb14">
+          <div class="card-h"><div class="card-t">6-Month Trend</div></div>
+          <div class="card-b"><div style="height:225px"><canvas id="chart-trend" aria-label="Monthly trend"></canvas></div></div>
+        </div>
+        <div class="card mb14">
+          <div class="card-h"><div class="card-t">Spending by Day of Week</div><div class="xs muted">Average</div></div>
+          <div class="card-b" id="an-dow" style="padding:11px 14px"></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><div class="card-t">Spending Heatmap</div><div class="sm muted" id="hm-lbl"></div></div>
+          <div class="card-b"><div id="heatmap"></div></div>
+        </div>
+      </div>
+
+      <div class="page" id="pg-split">
+        <div class="flex jb mb14" style="flex-wrap:wrap;gap:9px">
+          <div><h2 class="h1">Split &amp; Groups</h2><p class="sm muted">Track shared expenses</p></div>
+          <button class="btn btn-primary btn-sm" id="split-new-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><path d="M12 4v16m8-8H4"/></svg>New Group</button>
+        </div>
+        <div class="split-layout">
+          <div class="split-panel" style="max-height:calc(100dvh - 130px)">
+            <div style="padding:10px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+              <span class="semi sm">Groups</span><span class="xs muted" id="sp-grp-cnt"></span>
+            </div>
+            <div id="sp-groups" style="flex:1;overflow-y:auto"></div>
+            <div style="padding:8px 13px;border-top:1px solid var(--border)">
+              <div class="xs muted" id="sp-my-bal" style="text-align:center"></div>
+            </div>
+          </div>
+          <div id="sp-detail">
+            <div class="card" style="padding:56px 20px;text-align:center">
+              <div style="font-size:2.5rem;margin-bottom:10px">&#128184;</div>
+              <div class="semi" style="font-size:.9375rem;margin-bottom:5px">Select a group</div>
+              <p class="sm muted">Choose from the left or create a new group.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="pg-profile">
+        <h2 class="h1 mb20">Profile</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+          <div class="card"><div class="card-h"><div class="card-t">Personal Info</div><button class="btn btn-ghost btn-sm" id="btn-edit-profile">Edit</button></div><div class="card-b" id="profile-info"></div></div>
+          <div class="card"><div class="card-h"><div class="card-t">Statistics</div></div><div class="card-b" id="profile-stats"></div></div>
+        </div>
+        <div class="card mt14">
+          <div class="card-h"><div class="card-t">Data Management</div></div>
+          <div class="card-b">
+            <div class="flex g8" style="flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" id="btn-export">Export CSV</button>
+              <label class="btn btn-ghost btn-sm" style="cursor:pointer">Import CSV<input type="file" id="btn-import" accept=".csv" style="display:none"/></label>
+              <button class="btn btn-danger btn-sm" id="btn-reset">Reset Data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- .content -->
+  </div><!-- .main -->
+
+  <button class="fab" id="fab" aria-label="Add transaction">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="22" height="22"><path d="M12 4v16m8-8H4"/></svg>
+  </button>
+
+  <nav class="mnav" id="mnav" aria-label="Mobile navigation">
+    <div class="mnav-item on" data-pg="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="19" height="19"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Home</div>
+    <div class="mnav-item" data-pg="transactions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="19" height="19"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Txns</div>
+    <div class="mnav-item" data-pg="budgets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="19" height="19"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Budgets</div>
+    <div class="mnav-item" data-pg="analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="19" height="19"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Analytics</div>
+    <div class="mnav-item" data-pg="split"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="19" height="19"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Split</div>
+  </nav>
+</div><!-- #app -->
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- Transaction Modal -->
+<div class="overlay hidden" id="mo-txn" role="dialog" aria-modal="true" aria-labelledby="mo-txn-title">
+  <div class="modal">
+    <div class="modal-head"><h2 class="modal-title" id="mo-txn-title">Add Transaction</h2><button class="modal-x" data-close="mo-txn" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body">
+      <div style="display:flex;gap:2px;background:var(--surface-3);border-radius:var(--r);padding:3px;margin-bottom:14px" id="txn-type-toggle">
+        <button class="btn w100" id="tt-expense" style="border-radius:7px;justify-content:center;background:var(--red-pale);color:var(--red)">Expense</button>
+        <button class="btn w100" id="tt-income"  style="border-radius:7px;justify-content:center;color:var(--text-3)">Income</button>
+      </div>
+      <div class="frow"><label class="flabel">Amount</label>
+        <div class="amt-wrap"><span class="amt-pfx amount-pfx">&#8377;</span><input type="text" id="txn-amt" class="amt-inp" placeholder="0.00" inputmode="decimal" aria-label="Amount"/></div>
+      </div>
+      <div class="frow"><label class="flabel" for="txn-cat">Category</label><select id="txn-cat" class="sel" aria-label="Category"></select></div>
+      <div class="frow"><label class="flabel" for="txn-note">Note</label><input type="text" id="txn-note" class="inp" placeholder="What was this for?" maxlength="200"/></div>
+      <div class="frow"><label class="flabel" for="txn-date">Date</label><input type="date" id="txn-date" class="inp"/></div>
+      <div class="frow"><label class="flabel" for="txn-tags">Tags</label><input type="text" id="txn-tags" class="inp" placeholder="work, travel..."/></div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.875rem;margin-bottom:10px"><input type="checkbox" id="txn-recur" style="accent-color:var(--brand)"/><span>Recurring</span></label>
+      <div id="txn-recur-opts" class="hidden frow"><label class="flabel" for="txn-recur-freq">Frequency</label><select id="txn-recur-freq" class="sel"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="yearly">Yearly</option></select></div>
+      <div style="font-size:.75rem;color:var(--red);min-height:16px" id="txn-err" role="alert"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="mo-txn">Cancel</button>
+      <button class="btn btn-danger btn-sm hidden" id="txn-del-btn">Delete</button>
+      <button class="btn btn-primary" id="txn-save-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Budget Modal -->
+<div class="overlay hidden" id="mo-bud" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2 class="modal-title">Set Budget</h2><button class="modal-x" data-close="mo-bud" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body">
+      <div class="frow"><label class="flabel" for="bud-cat">Category</label><select id="bud-cat" class="sel"></select></div>
+      <div class="frow"><label class="flabel">Monthly Limit</label>
+        <div class="amt-wrap"><span class="amt-pfx amount-pfx">&#8377;</span><input type="text" id="bud-limit" class="amt-inp" placeholder="5000" inputmode="decimal"/></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" data-close="mo-bud">Cancel</button><button class="btn btn-primary" id="bud-save-btn">Save Budget</button></div>
+  </div>
+</div>
+
+<!-- Goal Modal -->
+<div class="overlay hidden" id="mo-goal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2 class="modal-title" id="mo-goal-title">New Goal</h2><button class="modal-x" data-close="mo-goal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body">
+      <div class="frow"><label class="flabel" for="goal-emoji">Icon</label><input type="text" id="goal-emoji" class="inp" placeholder="&#127919;" maxlength="4" style="width:64px;text-align:center;font-size:1.375rem"/></div>
+      <div class="frow"><label class="flabel" for="goal-name">Goal Name</label><input type="text" id="goal-name" class="inp" placeholder="e.g. Emergency Fund" maxlength="80"/></div>
+      <div class="frow"><label class="flabel">Target</label><div class="amt-wrap"><span class="amt-pfx amount-pfx">&#8377;</span><input type="text" id="goal-target" class="amt-inp" inputmode="decimal" placeholder="50000"/></div></div>
+      <div class="frow"><label class="flabel">Already Saved</label><div class="amt-wrap"><span class="amt-pfx amount-pfx">&#8377;</span><input type="text" id="goal-saved" class="amt-inp" inputmode="decimal" placeholder="0"/></div></div>
+      <div class="frow"><label class="flabel" for="goal-deadline">Deadline (optional)</label><input type="date" id="goal-deadline" class="inp"/></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="mo-goal">Cancel</button>
+      <button class="btn btn-danger btn-sm hidden" id="goal-del-btn">Delete</button>
+      <button class="btn btn-primary" id="goal-save-btn">Save Goal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Progress Modal -->
+<div class="overlay hidden" id="mo-prog" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2 class="modal-title">Update Progress</h2><button class="modal-x" data-close="mo-prog" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body">
+      <div id="prog-preview" class="mb12"></div>
+      <div class="flex g6 mb10" style="flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" data-qadd="500">+500</button>
+        <button class="btn btn-ghost btn-sm" data-qadd="1000">+1K</button>
+        <button class="btn btn-ghost btn-sm" data-qadd="5000">+5K</button>
+        <button class="btn btn-ghost btn-sm" data-qadd="10000">+10K</button>
+      </div>
+      <div class="frow"><label class="flabel">New Saved Amount</label>
+        <div class="amt-wrap"><span class="amt-pfx amount-pfx">&#8377;</span><input type="text" id="prog-saved" class="amt-inp" inputmode="decimal" placeholder="0"/></div>
+      </div>
+      <div class="prog mt8" style="height:9px"><div class="prog-fill b" id="prog-bar-live" style="width:0%"></div></div>
+      <div class="xs muted mt8" id="prog-pct-live" style="text-align:right"></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" data-close="mo-prog">Cancel</button><button class="btn btn-primary" id="prog-save-btn">Update</button></div>
+  </div>
+</div>
+
+<!-- Profile Modal -->
+<div class="overlay hidden" id="mo-profile" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2 class="modal-title">Edit Profile</h2><button class="modal-x" data-close="mo-profile" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body">
+      <div class="frow"><label class="flabel" for="edit-name">Name</label><input type="text" id="edit-name" class="inp" maxlength="60"/></div>
+      <div class="frow"><label class="flabel" for="edit-cur">Currency</label>
+        <select id="edit-cur" class="sel">
+          <option value="&#8377;">&#8377; Indian Rupee</option><option value="$">$ US Dollar</option>
+          <option value="&#8364;">&#8364; Euro</option><option value="&#163;">&#163; British Pound</option>
+          <option value="&#165;">&#165; Japanese Yen</option><option value="A$">A$ Australian Dollar</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" data-close="mo-profile">Cancel</button><button class="btn btn-primary" id="profile-save-btn">Save</button></div>
+  </div>
+</div>
+
+<!-- Split: New Group Modal -->
+<div class="overlay hidden" id="mo-grp" role="dialog" aria-modal="true">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h2 class="modal-title">Create Group</h2><button class="modal-x" data-close="mo-grp" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body">
+      <div class="frow"><label class="flabel" for="grp-emoji">Icon</label><input type="text" id="grp-emoji" class="inp" placeholder="&#128101;" maxlength="4" style="width:60px;text-align:center;font-size:1.375rem"/></div>
+      <div class="frow"><label class="flabel" for="grp-name">Group Name</label><input type="text" id="grp-name" class="inp" placeholder="e.g. Goa Trip, Flat Mates" maxlength="60"/></div>
+      <div class="frow">
+        <label class="flabel">Members</label>
+        <div class="flex g8 mb8"><input type="text" id="grp-member-inp" class="inp" placeholder="Member name" maxlength="40" style="flex:1"/><button class="btn btn-ghost btn-sm" id="grp-add-member">Add</button></div>
+        <div id="grp-members" style="display:flex;flex-wrap:wrap;gap:6px;min-height:24px"></div>
+      </div>
+      <div style="font-size:.75rem;color:var(--red);min-height:16px" id="grp-err" role="alert"></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" data-close="mo-grp">Cancel</button><button class="btn btn-primary" id="grp-save-btn">Create Group</button></div>
+  </div>
+</div>
+
+<!-- Split: Add Expense Modal -->
+<div class="overlay hidden" id="mo-exp" role="dialog" aria-modal="true">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h2 class="modal-title">Add Shared Expense</h2><button class="modal-x" data-close="mo-exp" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body">
+      <div class="frow"><label class="flabel" for="exp-desc">Description</label><input type="text" id="exp-desc" class="inp" placeholder="Hotel, Dinner, Petrol..." maxlength="100"/></div>
+      <div class="frow"><label class="flabel">Amount</label>
+        <div class="amt-wrap"><span class="amt-pfx amount-pfx" id="exp-cur">&#8377;</span><input type="text" id="exp-amt" class="amt-inp" inputmode="decimal" placeholder="0.00"/></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+        <div class="frow"><label class="flabel" for="exp-date">Date</label><input type="date" id="exp-date" class="inp"/></div>
+        <div class="frow"><label class="flabel" for="exp-paid">Paid By</label><select id="exp-paid" class="sel"></select></div>
+      </div>
+      <div class="frow">
+        <label class="flabel">Split Type</label>
+        <div class="split-tabs" id="exp-split-tabs">
+          <div class="split-tab on" data-t="equal">Equal</div>
+          <div class="split-tab" data-t="exact">Exact</div>
+          <div class="split-tab" data-t="percent">Percent</div>
+        </div>
+        <div id="exp-split-detail"></div>
+      </div>
+      <div style="font-size:.75rem;color:var(--red);min-height:16px" id="exp-err" role="alert"></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" data-close="mo-exp">Cancel</button><button class="btn btn-primary" id="exp-save-btn">Add Expense</button></div>
+  </div>
+</div>
+
+<!-- Settle Modal -->
+<div class="overlay hidden" id="mo-settle" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2 class="modal-title">Record Settlement</h2><button class="modal-x" data-close="mo-settle" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body" id="settle-body"></div>
+    <div class="modal-foot"><button class="btn btn-ghost" data-close="mo-settle">Cancel</button><button class="btn btn-primary" id="settle-save-btn">Mark Settled</button></div>
+  </div>
+</div>
+
+<!-- ES Module entry point -->
+<script type="module" src="src/app.js"></script>
+</body>
+</html>
